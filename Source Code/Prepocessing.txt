@@ -1,0 +1,56 @@
+#read csv file
+mydata = read.csv("C:\\Users\\athar\\Desktop\\FYP\\MyDataFinal.csv", sep=",")
+#remove duplicates
+mydata=unique(mydata)
+
+#include library for cleaning of data
+library(tm)
+
+#Making corpus of all reviews
+tdata<-mydata[sample(nrow(mydata), size=39033, replace=FALSE),]
+Pro_Rev=tdata$Review
+fdata <- as.data.frame(REVIEW_NO=c(1:39033),Pro_Rev)
+
+#view corpus
+inspect(fdata)
+
+iconv(fdata, from= "latin1", to="ASCII", sub="")
+pdocs <- Corpus(VectorSource(fdata$Pro_Rev))
+#to see a particular record
+pdocs[[5000]]$content
+
+
+pdocs <- tm_map(pdocs, removePunctuation)
+
+for(j in seq(pdocs))   
+{   
+  pdocs[[j]] <- gsub("/", " ", pdocs[[j]])   
+  pdocs[[j]] <- gsub("@", " ", pdocs[[j]])   
+  pdocs[[j]] <- gsub("\\|", " ", pdocs[[j]])
+  pdocs[[j]] <- gsub("#", " ", pdocs[[j]])
+  pdocs[[j]] <- gsub("&", " ", pdocs[[j]])
+  pdocs[[j]] <- gsub("$", " ", pdocs[[j]])
+  pdocs[[j]] <- gsub(";", " ", pdocs[[j]])
+  pdocs[[j]] <- gsub("!", " ", pdocs[[j]])
+  pdocs[[j]] <- gsub("%", " ", pdocs[[j]])
+}    
+
+pdocs <- tm_map(pdocs, removeNumbers)  
+pdocs <- tm_map(pdocs, tolower)
+pdocs <- tm_map(pdocs, removeWords, stopwords("english"))
+
+
+inspect(pdocs)
+
+library(SnowballC) 
+
+pdocs <- tm_map(pdocs, stripWhitespace)
+
+
+attributes(pdocs)
+df <- data.frame(text = get("content", pdocs))
+
+#write to csv file
+write.csv(df,file="C:\\Users\\athar\\Desktop\\FYP\\Test.csv",row.names=F)
+
+
